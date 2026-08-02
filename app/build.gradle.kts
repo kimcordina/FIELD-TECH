@@ -15,8 +15,8 @@ android {
         applicationId = "com.ncordina.fieldtech2"
         minSdk = 29
         targetSdk = 36
-        versionCode = 9
-        versionName = "9.0"
+        versionCode = 10
+        versionName = "9.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
