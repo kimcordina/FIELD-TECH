@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Onest font family mapping based on your actual font files -->
+    
+    <!-- Thin weight -->
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="100"
+        android:font="@font/onest_thin_1602_hint" />
+    
+    <!-- Light weight -->
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="300"
+        android:font="@font/onest_light_1602_hint" />
+    
+    <!-- Regular weight -->
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        android:font="@font/onest_regular_1602_hint" />
+    
+    <!-- Medium weight -->
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="500"
+        android:font="@font/onest_medium_1602_hint" />
+    
+    <!-- Bold weight -->
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="700"
+        android:font="@font/onest_bold_1602_hint" />
+    
+    <!-- Extra Bold weight -->
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="800"
+        android:font="@font/onest_extrabold_1602_hint" />
+    
+    <!-- Black weight -->
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="900"
+        android:font="@font/onest_black_1602_hint" />
+</font-family>

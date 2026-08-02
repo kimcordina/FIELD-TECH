@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Collection group rule for pins (required for collectionGroup queries)
+    match /{path=**}/pins/{pinId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    // Company data rules
+    match /companies/{companyId} {
+      
+      // Clients collection
+      match /clients/{clientId} {
+        allow read, write: if isSignedIn();
+        
+        // Pins subcollection under clients
+        match /pins/{pinId} {
+          allow read, write: if isSignedIn();
+        }
+      }
+      
+      // Tasks collection
+      match /tasks/{taskId} {
+        allow read, write: if isSignedIn();
+      }
+      
+      // Requests collection
+      match /requests/{requestId} {
+        allow read, write: if isSignedIn();
+      }
+      
+      // Routes collection
+      match /routes/{routeId} {
+        allow read, write: if isSignedIn();
+        
+        // Stops subcollection under routes
+        match /stops/{stopId} {
+          allow read, write: if isSignedIn();
+        }
+      }
+      
+      // Reports collection
+      match /reports/{reportId} {
+        allow read, write: if isSignedIn();
+        
+        // Photos subcollection under reports
+        match /photos/{photoId} {
+          allow read, write: if isSignedIn();
+        }
+      }
+      
+      // Users collection (for push notifications) - MOVED INSIDE companies
+      match /users/{userId} {
+        allow read, write: if isSignedIn();
+        
+        // Tokens subcollection
+        match /tokens/{tokenId} {
+          allow read, write: if isSignedIn();
+        }
+      }
+    }
+  }
+}
+

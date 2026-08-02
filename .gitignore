@@ -1,0 +1,58 @@
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Local config
+local.properties
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Kotlin
+.kotlin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs / misc
+*.log
+*.hprof
+
+# Archives / local dumps
+*.zip
+*.rar
+
+# Firebase / secrets that must stay local
+# (google-services.json is kept for build; do not add keystores)
+*.jks
+*.keystore
+keystore.properties
+
+# Node (Cloud Functions)
+functions/node_modules/
+functions/lib/

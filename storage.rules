@@ -1,0 +1,59 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Company-specific storage paths
+    match /companies/{companyId} {
+      
+      // Request photos - allow authenticated users to read and write
+      match /requests/{requestId}/photos/{photoFile} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && request.resource.size < 10 * 1024 * 1024; // Max 10MB
+      }
+      
+      // Request audio (voice notes) - allow authenticated users to read and write
+      match /requests/{requestId}/audio/{audioFile} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && request.resource.size < 5 * 1024 * 1024; // Max 5MB
+      }
+      
+      // Task photos - allow authenticated users to read and write
+      match /tasks/{taskId}/photos/{photoFile} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && request.resource.size < 10 * 1024 * 1024; // Max 10MB
+      }
+      
+      // Task audio (voice notes) - allow authenticated users to read and write
+      match /tasks/{taskId}/audio/{audioFile} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && request.resource.size < 5 * 1024 * 1024; // Max 5MB
+      }
+      
+      // Report PDFs - allow authenticated users to read and write
+      match /reports/{reportId}/pdf/{pdfFile} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && request.resource.size < 20 * 1024 * 1024; // Max 20MB
+      }
+      
+      // Report photos - allow authenticated users to read and write
+      match /reports/{reportId}/photos/{photoFile} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && request.resource.size < 10 * 1024 * 1024; // Max 10MB
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
