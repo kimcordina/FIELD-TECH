@@ -56,7 +56,12 @@ class SettingsManager private constructor(context: Context) {
             timeCompletedEnabled = prefs.getBoolean("time_completed_enabled", false),
             // Email Settings
             autoEmailReportsEnabled = prefs.getBoolean("auto_email_reports_enabled", false),
-            reportEmailRecipient = prefs.getString("report_email_recipient", "") ?: ""
+            reportEmailRecipient = prefs.getString("report_email_recipient", "") ?: "",
+            // Service due thresholds
+            serviceSoonMonths = prefs.getInt("service_soon_months", 1),
+            serviceLateMonths = prefs.getInt("service_late_months", 2),
+            serviceOverdueMonths = prefs.getInt("service_overdue_months", 3),
+            serviceStarredOverdueMonths = prefs.getInt("service_starred_overdue_months", 1)
         )
     }
     
@@ -271,5 +276,34 @@ class SettingsManager private constructor(context: Context) {
     fun updateReportEmailRecipient(email: String) {
         prefs.edit().putString("report_email_recipient", email).apply()
         _settings.value = _settings.value.copy(reportEmailRecipient = email)
+    }
+
+    fun updateServiceDueThresholds(
+        soonMonths: Int,
+        lateMonths: Int,
+        overdueMonths: Int,
+        starredOverdueMonths: Int = 1
+    ) {
+        prefs.edit()
+            .putInt("service_soon_months", soonMonths.coerceIn(1, 24))
+            .putInt("service_late_months", lateMonths.coerceIn(1, 24))
+            .putInt("service_overdue_months", overdueMonths.coerceIn(1, 36))
+            .putInt("service_starred_overdue_months", starredOverdueMonths.coerceIn(1, 12))
+            .apply()
+        _settings.value = _settings.value.copy(
+            serviceSoonMonths = soonMonths.coerceIn(1, 24),
+            serviceLateMonths = lateMonths.coerceIn(1, 24),
+            serviceOverdueMonths = overdueMonths.coerceIn(1, 36),
+            serviceStarredOverdueMonths = starredOverdueMonths.coerceIn(1, 12)
+        )
+    }
+
+    fun applyServiceDueThresholdsFromRemote(
+        soonMonths: Int,
+        lateMonths: Int,
+        overdueMonths: Int,
+        starredOverdueMonths: Int
+    ) {
+        updateServiceDueThresholds(soonMonths, lateMonths, overdueMonths, starredOverdueMonths)
     }
 }

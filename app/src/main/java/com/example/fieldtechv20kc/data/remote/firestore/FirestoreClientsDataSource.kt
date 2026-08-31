@@ -58,6 +58,8 @@ data class ClientDto(
     var notes: String? = null,
     var productsEquipment: String? = null,
     var salesman: String? = null,
+    var priorityStarred: Boolean = false,
+    var serviceAlertsSilenced: Boolean = false,
     var updatedAt: Long = System.currentTimeMillis(),
     var deleted: Boolean = false
 ) {
@@ -74,6 +76,8 @@ data class ClientDto(
         "notes" to notes,
         "productsEquipment" to productsEquipment,
         "salesman" to salesman,
+        "priorityStarred" to priorityStarred,
+        "serviceAlertsSilenced" to serviceAlertsSilenced,
         "updatedAt" to updatedAt,
         "deleted" to deleted
     )
@@ -93,6 +97,8 @@ data class ClientDto(
         notes = notes,
         productsEquipment = productsEquipment,
         salesman = salesman,
+        priorityStarred = priorityStarred,
+        serviceAlertsSilenced = serviceAlertsSilenced,
         updatedAt = updatedAt,
         deleted = deleted
     )
@@ -112,6 +118,8 @@ data class ClientDto(
             notes = c.notes,
             productsEquipment = c.productsEquipment,
             salesman = c.salesman,
+            priorityStarred = c.priorityStarred,
+            serviceAlertsSilenced = c.serviceAlertsSilenced,
             updatedAt = c.updatedAt,
             deleted = c.deleted
         )

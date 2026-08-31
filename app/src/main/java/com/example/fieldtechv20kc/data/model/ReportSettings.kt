@@ -28,5 +28,11 @@ data class ReportSettings(
     
     // Email Settings
     val autoEmailReportsEnabled: Boolean = false,
-    val reportEmailRecipient: String = "" // Gmail address to send reports to
+    val reportEmailRecipient: String = "", // Gmail address to send reports to
+
+    // Service due thresholds (months since last service) — company defaults cached locally
+    val serviceSoonMonths: Int = 1,
+    val serviceLateMonths: Int = 2,
+    val serviceOverdueMonths: Int = 3,
+    val serviceStarredOverdueMonths: Int = 1
 )

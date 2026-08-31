@@ -82,6 +82,12 @@ interface ClientDao {
     // Update last service date
     @Query("UPDATE clients SET lastServiceDate = :lastServiceDate, updatedAt = :updatedAt WHERE id = :id")
     suspend fun updateLastServiceDate(id: String, lastServiceDate: Long, updatedAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE clients SET priorityStarred = :starred, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun updatePriorityStarred(id: String, starred: Boolean, updatedAt: Long = System.currentTimeMillis())
+
+    @Query("UPDATE clients SET serviceAlertsSilenced = :silenced, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun updateServiceAlertsSilenced(id: String, silenced: Boolean, updatedAt: Long = System.currentTimeMillis())
     
     // Soft delete client
     @Query("UPDATE clients SET deleted = 1, updatedAt = :updatedAt WHERE id = :id")

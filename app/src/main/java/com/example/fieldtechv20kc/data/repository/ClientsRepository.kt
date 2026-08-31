@@ -147,6 +147,7 @@ class ClientsRepository(
         // Create or update client entity
         val now = System.currentTimeMillis()
         val clientId = input.id ?: UUID.randomUUID().toString()
+        val existing = input.id?.let { clientDao.getByIdOnce(it) }
         val client = Client(
             id = clientId,
             companyId = BuildConfig.COMPANY_ID,
@@ -166,6 +167,8 @@ class ClientsRepository(
             notes = input.notes?.trim(),
             productsEquipment = input.productsEquipment?.trim(),
             salesman = input.salesman?.trim(),
+            priorityStarred = existing?.priorityStarred ?: false,
+            serviceAlertsSilenced = existing?.serviceAlertsSilenced ?: false,
             updatedAt = now,
             deleted = false
         )
@@ -236,6 +239,31 @@ class ClientsRepository(
             } catch (e: Exception) {
                 // Log but don't fail the operation
                 android.util.Log.e("ClientsRepository", "Failed to sync lastServiceDate to Firestore", e)
+            }
+        }
+    }
+
+    suspend fun setPriorityStarred(clientId: String, starred: Boolean) {
+        val now = System.currentTimeMillis()
+        clientDao.updatePriorityStarred(clientId, starred, now)
+        syncClientFields(clientId)
+    }
+
+    suspend fun setServiceAlertsSilenced(clientId: String, silenced: Boolean) {
+        val now = System.currentTimeMillis()
+        clientDao.updateServiceAlertsSilenced(clientId, silenced, now)
+        syncClientFields(clientId)
+    }
+
+    private fun syncClientFields(clientId: String) {
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            try {
+                val client = clientDao.getClientById(clientId) ?: return@launch
+                kotlinx.coroutines.withTimeout(5000) {
+                    remote.upsert(client)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ClientsRepository", "Failed to sync client flags to Firestore", e)
             }
         }
     }
