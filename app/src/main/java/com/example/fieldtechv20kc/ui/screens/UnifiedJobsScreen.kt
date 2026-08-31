@@ -473,9 +473,11 @@ fun UnifiedJobsScreen(
                 },
                 initialNotes = selectedRequestForAssign?.notes,
                 onAssign = { technicianName, voiceUri, notes, photoUris ->
+                    // Capture before dialog onDismiss clears selectedRequestForAssign
+                    // (dialog calls onAssign then onDismiss in the same click).
+                    val currentRequest = selectedRequestForAssign ?: return@UnifiedTaskAssignmentDialog
                     scope.launch {
                         try {
-                            val currentRequest = selectedRequestForAssign ?: return@launch
                             val finalVoiceUri = voiceUri ?: currentRequest.voiceUri
                             val finalPhotoUris = photoUris ?: currentRequest.photoUris
                             val finalNotes = notes.takeIf { it.isNotBlank() } ?: currentRequest.notes
@@ -649,8 +651,7 @@ private fun UnassignedRequestCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(2.dp, amber, RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
+            .border(2.dp, amber, RoundedCornerShape(12.dp)),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = amberBg),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -662,7 +663,12 @@ private fun UnassignedRequestCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.Top
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            // Clickable details only — keeps the Assign shortcut from fighting card navigation
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = onClick)
+            ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
