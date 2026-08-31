@@ -182,6 +182,7 @@ fun ServiceNeedsScreen(
                                 createdByName = currentUserEmail
                             )
                         )
+                        snackbarHostState.showSnackbar("Job assigned successfully!")
                         showAssignDialog = false
                         selectedClientForTask = null
                     }
