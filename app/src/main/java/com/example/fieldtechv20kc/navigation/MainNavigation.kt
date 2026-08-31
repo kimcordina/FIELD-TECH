@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.RequestPage
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -106,6 +107,12 @@ sealed class BottomNavItem(
         title = "Clients",
         icon = Icons.Default.Business
     )
+
+    object ServiceNeeds : BottomNavItem(
+        route = Screen.ServiceNeeds.route,
+        title = "Service",
+        icon = Icons.Default.Build
+    )
     
     object Tasks : BottomNavItem(
         route = Screen.Tasks.route,
@@ -136,6 +143,7 @@ fun AuthenticatedApp(
     val items = listOf(
         BottomNavItem.Reports,
         BottomNavItem.Clients,
+        BottomNavItem.ServiceNeeds,
         BottomNavItem.Tasks,
         BottomNavItem.Settings
     )
@@ -146,6 +154,7 @@ fun AuthenticatedApp(
             val route = when (initialRoute) {
                 "tasks", "requests" -> Screen.Tasks.route // Requests merged into Jobs
                 "reports" -> Screen.SavedReports.route
+                "service", "service_needs" -> Screen.ServiceNeeds.route
                 else -> null
             }
             if (route != null) {
@@ -255,6 +264,51 @@ fun AuthenticatedApp(
                     viewModel = clientsViewModel,
                     tasksViewModel = tasksViewModel
                 )
+            }
+
+            // Service Needs Tab
+            composable(Screen.ServiceNeeds.route) {
+                val context = LocalContext.current
+                val app = context.applicationContext as FieldTechApplication
+                val settingsManager = SettingsManager.getInstance(context)
+                val serviceNeedsViewModel = androidx.lifecycle.viewmodel.compose.viewModel<com.example.fieldtechv20kc.viewmodel.ServiceNeedsViewModel>(
+                    factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                            @Suppress("UNCHECKED_CAST")
+                            return com.example.fieldtechv20kc.viewmodel.ServiceNeedsViewModel(
+                                app.clientsRepository,
+                                settingsManager
+                            ) as T
+                        }
+                    }
+                )
+                val tasksViewModel = androidx.lifecycle.viewmodel.compose.viewModel<com.example.fieldtechv20kc.viewmodel.ServiceTasksViewModel>(
+                    factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                            @Suppress("UNCHECKED_CAST")
+                            return com.example.fieldtechv20kc.viewmodel.ServiceTasksViewModel(app.tasksRepository) as T
+                        }
+                    }
+                )
+                var userRole by remember { mutableStateOf("NONE") }
+                LaunchedEffect(Unit) {
+                    try {
+                        userRole = com.example.fieldtechv20kc.data.remote.firestore.UsersRemote()
+                            .getProfile()?.role ?: "NONE"
+                    } catch (_: Exception) {
+                        userRole = "NONE"
+                    }
+                }
+                ServiceNeedsScreen(
+                    navController = navController,
+                    viewModel = serviceNeedsViewModel,
+                    tasksViewModel = tasksViewModel,
+                    userRole = userRole
+                )
+            }
+
+            composable(Screen.ServiceDueSettings.route) {
+                ServiceDueSettingsScreen(navController = navController)
             }
             
             // Jobs Tab (unified: unassigned requests + assigned jobs)

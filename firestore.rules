@@ -55,6 +55,11 @@ service cloud.firestore {
         }
       }
       
+      // Company config (service due thresholds, etc.)
+      match /config/{docId} {
+        allow read, write: if isSignedIn();
+      }
+      
       // Users collection (for push notifications) - MOVED INSIDE companies
       match /users/{userId} {
         allow read, write: if isSignedIn();

@@ -5,9 +5,11 @@ sealed class Screen(val route: String) {
     object SavedReports : Screen("saved_reports")
     object NewReport : Screen("new_report")
     object Clients : Screen("clients")
+    object ServiceNeeds : Screen("service_needs")
     object Tasks : Screen("tasks")
     object Requests : Screen("requests")
     object Settings : Screen("settings")
+    object ServiceDueSettings : Screen("service_due_settings")
     
     // Report Creation Flow Screens
     object ClientInfo : Screen("client_info")

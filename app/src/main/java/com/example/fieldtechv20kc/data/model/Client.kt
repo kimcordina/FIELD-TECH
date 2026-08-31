@@ -35,6 +35,8 @@ data class Client(
     val notes: String? = null,              // Free-form notes (max 10,000 chars)
     val productsEquipment: String? = null,  // Comma-separated list: 2IN1,RMW,RINSE,ECOMIX,LAUNDRY,HA25,POOL,OTHER
     val salesman: String? = null,           // Sales representative name
+    val priorityStarred: Boolean = false,   // Service-needs priority star (synced)
+    val serviceAlertsSilenced: Boolean = false, // Skip overdue push alerts (synced)
     val updatedAt: Long = System.currentTimeMillis(),
     val deleted: Boolean = false            // Soft delete flag
 )

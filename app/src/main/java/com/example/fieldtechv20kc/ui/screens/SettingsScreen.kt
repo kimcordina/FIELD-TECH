@@ -596,6 +596,15 @@ fun SettingsScreen(
                         subtitle = "View reports and performance data",
                         onClick = { navController.navigate(Screen.Statistics.route) }
                     )
+
+                    Divider(modifier = Modifier.padding(horizontal = 16.dp))
+
+                    SettingsItem(
+                        icon = Icons.Default.Build,
+                        title = "Service due rules",
+                        subtitle = "Soon ${settings.serviceSoonMonths}mo · Late ${settings.serviceLateMonths}mo · Overdue ${settings.serviceOverdueMonths}mo",
+                        onClick = { navController.navigate(Screen.ServiceDueSettings.route) }
+                    )
                 }
             }
             

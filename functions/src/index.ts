@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { onCall } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import { setGlobalOptions } from "firebase-functions/v2/options";
 
 admin.initializeApp();
@@ -407,6 +408,127 @@ export const onRouteCompleted = onDocumentWritten(
       
       console.log(`Route completion notification sent to ${managerTokens.length} manager(s)`);
     }
+  }
+);
+
+// ========================================
+// Weekly Service Overdue Digest
+// Mondays 09:00 Europe/Malta → TECH + MANAGER
+// ========================================
+
+type ServiceDueThresholds = {
+  soonMonths: number;
+  lateMonths: number;
+  overdueMonths: number;
+  starredOverdueMonths: number;
+};
+
+async function getServiceDueThresholds(): Promise<ServiceDueThresholds> {
+  const snap = await admin.firestore()
+    .collection("companies").doc(COMPANY_ID)
+    .collection("config").doc("serviceDue")
+    .get();
+  const data = snap.data() || {};
+  return {
+    soonMonths: Number(data.soonMonths ?? 1),
+    lateMonths: Number(data.lateMonths ?? 2),
+    overdueMonths: Number(data.overdueMonths ?? 3),
+    starredOverdueMonths: Number(data.starredOverdueMonths ?? 1),
+  };
+}
+
+function monthsSinceLastService(lastServiceDate: number | null | undefined, now: number): number {
+  if (lastServiceDate == null) return Number.POSITIVE_INFINITY;
+  const days = Math.max(0, now - Number(lastServiceDate)) / (24 * 60 * 60 * 1000);
+  return days / 30;
+}
+
+function isOverdueClient(client: Record<string, unknown>, thresholds: ServiceDueThresholds, now: number): boolean {
+  if (client.deleted === true) return false;
+  if (client.serviceAlertsSilenced === true) return false;
+  const months = monthsSinceLastService(client.lastServiceDate as number | null | undefined, now);
+  const overdueFloor = client.priorityStarred === true
+    ? Math.min(thresholds.starredOverdueMonths, thresholds.overdueMonths)
+    : thresholds.overdueMonths;
+  return months >= overdueFloor;
+}
+
+export const weeklyOverdueDigest = onSchedule(
+  {
+    schedule: "0 9 * * 1",
+    timeZone: "Europe/Malta",
+    region: "europe-west1",
+  },
+  async () => {
+    const now = Date.now();
+    const thresholds = await getServiceDueThresholds();
+    const clientsSnap = await admin.firestore()
+      .collection("companies").doc(COMPANY_ID)
+      .collection("clients")
+      .get();
+
+    const clients: Array<Record<string, unknown> & { id: string }> = clientsSnap.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as Record<string, unknown>),
+    }));
+
+    const overdue = clients
+      .filter((c) => c.deleted !== true)
+      .filter((c) => isOverdueClient(c, thresholds, now))
+      .sort((a, b) => {
+        const aStar = a.priorityStarred === true ? 0 : 1;
+        const bStar = b.priorityStarred === true ? 0 : 1;
+        if (aStar !== bStar) return aStar - bStar;
+        const aDate = Number(a.lastServiceDate ?? 0);
+        const bDate = Number(b.lastServiceDate ?? 0);
+        return aDate - bDate;
+      });
+
+    if (overdue.length === 0) {
+      console.log("Weekly overdue digest: no overdue clients");
+      return;
+    }
+
+    const preview = overdue
+      .slice(0, 5)
+      .map((c) => String(c.name || "Client"))
+      .join(", ");
+    const more = overdue.length > 5 ? ` +${overdue.length - 5} more` : "";
+    const starredCount = overdue.filter((c) => c.priorityStarred === true).length;
+
+    const title = `${overdue.length} client${overdue.length === 1 ? "" : "s"} overdue`;
+    const body = starredCount > 0
+      ? `${starredCount} starred · ${preview}${more}`
+      : `${preview}${more}`;
+
+    const managerTokens = await getTokensForManagers();
+    const techTokens = await getTokensForAllTechnicians();
+    const tokens = uniqueTokens([...managerTokens, ...techTokens]);
+
+    if (tokens.length === 0) {
+      console.log("Weekly overdue digest: no TECH/MANAGER tokens");
+      return;
+    }
+
+    await admin.messaging().sendEachForMulticast({
+      tokens,
+      notification: { title, body },
+      data: {
+        type: "SERVICE_OVERDUE_DIGEST",
+        count: String(overdue.length),
+        click_action: "OPEN_SERVICE",
+        timestamp: String(now),
+      },
+      android: {
+        priority: "high",
+        notification: {
+          channelId: "tasks_channel",
+          clickAction: "OPEN_SERVICE",
+        },
+      },
+    });
+
+    console.log(`Weekly overdue digest sent to ${tokens.length} device(s); overdue=${overdue.length}`);
   }
 );
 

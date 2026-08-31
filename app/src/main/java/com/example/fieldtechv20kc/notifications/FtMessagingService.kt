@@ -57,6 +57,7 @@ class FtMessagingService : FirebaseMessagingService() {
                 "OPEN_REPORTS" -> putExtra("navigate_to", "reports")
                 // Requests tab merged into Jobs — open the unified inbox
                 "OPEN_REQUESTS" -> putExtra("navigate_to", "tasks")
+                "OPEN_SERVICE" -> putExtra("navigate_to", "service_needs")
             }
         }
         
