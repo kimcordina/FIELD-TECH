@@ -1229,7 +1229,9 @@ fun UnifiedTaskAssignmentDialog(
                             voiceUri
                         }
                         onAssign(tech, finalVoiceUri, notes, if (photoUris.isNotEmpty()) photoUris.joinToString(",") else null)
-                        onDismiss() // Explicitly close the dialog
+                        // Close after onAssign so callers can capture state in onAssign first.
+                        // (Calling onDismiss before a coroutine reads selection state caused silent no-ops.)
+                        onDismiss()
                     }
                 },
                 enabled = selectedTechnician != null

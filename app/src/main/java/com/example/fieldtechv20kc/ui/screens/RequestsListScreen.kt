@@ -226,33 +226,30 @@ fun RequestsListScreen(
                 },
                 initialNotes = selectedRequestForAssign?.notes,
                 onAssign = { technicianName, voiceUri, notes, photoUris ->
+                    // Capture before dialog onDismiss clears selectedRequestForAssign
+                    // (dialog calls onAssign then onDismiss in the same click).
+                    val currentRequest = selectedRequestForAssign ?: return@UnifiedTaskAssignmentDialog
                     scope.launch {
                         try {
-                            val currentRequest = selectedRequestForAssign
-                            if (currentRequest != null) {
-                                // Use new voice note if provided, otherwise use request's voice note
-                                val finalVoiceUri = voiceUri ?: currentRequest.voiceUri
-                                // Use new photos if provided, otherwise use request's photos
-                                val finalPhotoUris = photoUris ?: currentRequest.photoUris
-                                // Use dialog notes if provided, otherwise carry forward request's notes
-                                val finalNotes = notes.takeIf { it.isNotBlank() } ?: currentRequest.notes
-                                
-                                val task = com.example.fieldtechv20kc.data.model.ServiceTask(
-                                    clientId = currentRequest.clientId,
-                                    title = "Service visit",
-                                    assignedToName = technicianName,
-                                    scheduledDate = com.example.fieldtechv20kc.utils.DateUtils.getTodayMidnight(),
-                                    status = com.example.fieldtechv20kc.data.model.TaskStatus.PENDING,
-                                    notes = finalNotes?.takeIf { it.isNotBlank() },
-                                    voiceNoteUri = finalVoiceUri,
-                                    photoUris = finalPhotoUris,
-                                    createdByName = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email ?: "Unknown"
-                                )
-                                tasksViewModel.upsert(task)
-                                requestsViewModel.linkTask(currentRequest.id, task.id)
-                                showQuickAssignDialog = false
-                                selectedRequestForAssign = null
-                            }
+                            val finalVoiceUri = voiceUri ?: currentRequest.voiceUri
+                            val finalPhotoUris = photoUris ?: currentRequest.photoUris
+                            val finalNotes = notes.takeIf { it.isNotBlank() } ?: currentRequest.notes
+
+                            val task = com.example.fieldtechv20kc.data.model.ServiceTask(
+                                clientId = currentRequest.clientId,
+                                title = "Service visit",
+                                assignedToName = technicianName,
+                                scheduledDate = com.example.fieldtechv20kc.utils.DateUtils.getTodayMidnight(),
+                                status = com.example.fieldtechv20kc.data.model.TaskStatus.PENDING,
+                                notes = finalNotes?.takeIf { it.isNotBlank() },
+                                voiceNoteUri = finalVoiceUri,
+                                photoUris = finalPhotoUris,
+                                createdByName = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email ?: "Unknown"
+                            )
+                            tasksViewModel.upsert(task)
+                            requestsViewModel.linkTask(currentRequest.id, task.id)
+                            showQuickAssignDialog = false
+                            selectedRequestForAssign = null
                         } catch (e: Exception) {
                             android.util.Log.e("RequestsList", "Error assigning job", e)
                         }
